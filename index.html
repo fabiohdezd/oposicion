@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mi oposición · Tecnología</title>
+
 <style>
   :root {
     font-family: system-ui, sans-serif;
@@ -13,13 +14,12 @@
 
   * { box-sizing: border-box; }
   body { margin: 0; }
-  main { max-width: 1250px; margin: auto; padding: 28px 20px; }
+  main { max-width: 1300px; margin: auto; padding: 28px 20px; }
   h1 { margin-bottom: 8px; font-size: clamp(28px, 5vw, 42px); }
-  h2 { margin-top: 0; }
+  h2 { margin: 0; font-size: 22px; }
   p { line-height: 1.6; }
-  .muted { color: #687c73; }
-  .eyebrow { color: #27745b; font-size: 12px; letter-spacing: 2px; }
-  button, input, select { font: inherit; }
+  button, input, select, textarea { font: inherit; }
+
   button {
     cursor: pointer;
     border: 1px solid #d7e2dc;
@@ -28,34 +28,103 @@
     background: white;
     color: #294d3e;
   }
+
   button:hover { background: #edf3ef; }
-  button.primary { background: #27745b; color: white; }
-  input, select {
+
+  button.primary,
+  button[aria-pressed="true"] {
+    background: #27745b;
+    color: white;
+    border-color: #27745b;
+  }
+
+  input, select, textarea {
     padding: 10px;
     border: 1px solid #cad8cf;
     border-radius: 7px;
     background: white;
+    color: #243d36;
     min-width: 0;
   }
+
+  textarea { resize: vertical; }
   input[type="checkbox"] { accent-color: #27745b; }
   :focus-visible { outline: 3px solid #81b39c; outline-offset: 3px; }
+  [hidden] { display: none !important; }
+
+  .muted, .notice { color: #687c73; }
+  .notice { font-size: 12px; line-height: 1.7; }
+  .eyebrow { color: #27745b; font-size: 12px; letter-spacing: 2px; }
+
   .summary {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     margin: 28px 0;
   }
+
   .stat {
     padding: 20px;
     background: white;
     border: 1px solid #e1e8e3;
     border-radius: 12px;
   }
+
   .stat strong { display: block; font-size: 30px; margin-bottom: 5px; }
   .stat span { color: #687c73; font-size: 13px; }
-  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+
+  .probability {
+    background: #eaf3ed;
+    border: 1px solid #d5e5da;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 30px;
+  }
+
+  .probability-values {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+
+  .probability-values strong {
+    display: block;
+    color: #27745b;
+    font-size: 34px;
+    margin-bottom: 5px;
+  }
+
+  .probability-values span { font-size: 13px; }
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 25px 0 15px;
+  }
+
+  .button-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+  }
+
   .toolbar input { flex: 1; min-width: 180px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    margin: 15px 0;
+  }
+
   .legend span::before {
     content: "";
     display: inline-block;
@@ -65,11 +134,18 @@
     border-radius: 50%;
     background: var(--color);
   }
+
+  .pending { --color: #98a29c; --pale: #f0f2f1; }
+  .progress { --color: #b58b3f; --pale: #faf3e6; }
+  .done { --color: #438963; --pale: #eaf5ed; }
+  .review { --color: #c36e52; --pale: #fceee8; }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
   }
+
   .card {
     background: white;
     border: 1px solid #e0e7e2;
@@ -78,20 +154,55 @@
     padding: 18px;
     display: flex;
     flex-direction: column;
+    gap: 14px;
   }
-  .pending { --color: #98a29c; --pale: #f0f2f1; }
-  .progress { --color: #b58b3f; --pale: #faf3e6; }
-  .done { --color: #438963; --pale: #eaf5ed; }
-  .review { --color: #c36e52; --pale: #fceee8; }
-  .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
   .number { font-size: 12px; color: #6b7f73; }
-  .badge { font-size: 11px; background: var(--pale); color: var(--color); padding: 5px 8px; border-radius: 5px; }
-  .card h3 { font-size: 16px; line-height: 1.5; overflow-wrap: anywhere; }
-  .checks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-  .check { padding: 5px 7px; background: #f3f5f3; color: #7d8a80; border-radius: 5px; font-size: 11px; }
+
+  .badge {
+    font-size: 11px;
+    background: var(--pale);
+    color: var(--color);
+    padding: 5px 8px;
+    border-radius: 5px;
+  }
+
+  .card h3 {
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .checks { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .check {
+    padding: 5px 7px;
+    background: #f3f5f3;
+    color: #7d8a80;
+    border-radius: 5px;
+    font-size: 11px;
+  }
+
   .check.yes { background: #eaf5ed; color: #36784e; }
-  .details { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
-  .warning { color: #a85925; font-size: 12px; }
+
+  .details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 12px;
+    color: #687c73;
+  }
+
+  .warning { color: #a85925; font-size: 12px; margin: 0; }
+
   .card-footer {
     display: flex;
     justify-content: space-between;
@@ -103,32 +214,128 @@
     font-size: 11px;
     color: #738478;
   }
-  .reading { font-size: 12px; color: #738478; margin-bottom: 16px; }
-  .notice { font-size: 12px; color: #687c73; }
+
+  /* Vista compacta: los mismos datos ocupan menos espacio. */
+  .grid.compact { grid-template-columns: 1fr; gap: 7px; }
+
+  .compact .card {
+    display: grid;
+    grid-template-columns: 120px minmax(150px, 1fr) 230px 230px;
+    gap: 10px 16px;
+    padding: 12px 16px;
+    border-top: 1px solid #e0e7e2;
+    border-left: 5px solid var(--color);
+    border-radius: 7px;
+  }
+
+  .compact .card-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .compact .card h3 { font-size: 13px; }
+  .compact .check { font-size: 10px; padding: 4px 6px; }
+  .compact .card-footer { border: 0; padding: 0; margin: 0; }
+  .compact .warning { grid-column: 2 / -1; font-size: 11px; }
+  .compact .details { grid-column: 3; font-size: 11px; }
+  .compact .checks { grid-column: 2; grid-row: 2; }
+  .compact .card-footer { grid-column: 4; grid-row: 1 / 3; }
+
+  .practicals {
+    margin-top: 40px;
+    padding-top: 10px;
+    border-top: 1px solid #dce5de;
+  }
+
+  .practical-list { display: grid; gap: 10px; }
+
+  .practical-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    background: white;
+    border: 1px solid #dce5de;
+    border-radius: 10px;
+    padding: 18px;
+  }
+
+  .practical-card > div { min-width: 0; }
+  .practical-card h3 { margin: 0 0 8px; overflow-wrap: anywhere; }
+  .practical-card p { margin: 5px 0; font-size: 12px; color: #687c73; }
+  .practical-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+
   dialog {
-    width: min(500px, 94vw);
+    width: min(520px, 94vw);
+    max-height: 90vh;
+    overflow: auto;
     border: 1px solid #dce5de;
     border-radius: 14px;
     padding: 26px;
     color: #243d36;
   }
+
   dialog::backdrop { background: #172c2466; }
-  .field { display: flex; flex-direction: column; gap: 7px; margin: 16px 0; font-size: 13px; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+
   .checkboxes { display: grid; gap: 14px; margin: 22px 0; }
   .checkboxes label { display: flex; gap: 8px; align-items: center; font-size: 14px; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
-  #message { min-height: 24px; color: #27745b; font-size: 13px; }
+
+  #message {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #244d3c;
+    color: white;
+    border-radius: 8px;
+    padding: 12px 20px;
+    max-width: 90vw;
+    width: max-content;
+    font-size: 13px;
+    z-index: 10;
+  }
+
+  #message:empty { display: none; }
   footer { padding-top: 24px; margin-top: 30px; border-top: 1px solid #dce5de; }
-  @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+  @media (max-width: 1000px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .compact .card { grid-template-columns: 100px 1fr 210px; }
+    .compact .checks { grid-column: 2; grid-row: 2; }
+    .compact .details { grid-column: 2; grid-row: 3; }
+    .compact .card-footer { grid-column: 3; grid-row: 1 / 4; }
+    .compact .warning { grid-column: 2 / -1; }
+  }
+
   @media (max-width: 580px) {
     .grid { grid-template-columns: 1fr; }
     .summary { grid-template-columns: 1fr 1fr; }
     .stat { padding: 15px; }
     .toolbar select { flex: 1; }
+    .probability-values { gap: 12px; }
+    .probability-values strong { font-size: 28px; }
+    .compact .card { grid-template-columns: 85px 1fr; }
+    .compact .checks { grid-column: 2; grid-row: auto; }
+    .compact .details { grid-column: 2; grid-row: auto; }
+    .compact .card-footer { grid-column: 1 / -1; grid-row: auto; }
+    .compact .warning { grid-column: 1 / -1; }
+    .practical-card { align-items: flex-start; gap: 12px; }
+    .practical-card h3 { font-size: 15px; }
   }
 </style>
 </head>
+
 <body>
 <main>
   <header>
@@ -139,16 +346,53 @@
 
   <section class="summary" id="summary" aria-label="Resumen"></section>
 
+  <section class="probability" aria-labelledby="probability-heading">
+    <h2 id="probability-heading">Sorteo de 4 bolas</h2>
+    <p class="notice">
+      Probabilidad de que entre los 4 temas extraídos haya al menos
+      uno que hayas estudiado.
+    </p>
+
+    <div class="probability-values">
+      <div>
+        <strong id="probability-studied">0 %</strong>
+        <span id="probability-studied-label">Con tus temas estudiados</span>
+      </div>
+      <div>
+        <strong id="probability-current">0 %</strong>
+        <span id="probability-current-label">Solo con los temas al día</span>
+      </div>
+    </div>
+
+    <p class="notice">
+      Se calculan 4 extracciones al azar, sin reemplazo, de 71 temas:
+      P = 1 − C(71 − estudiados, 4) / C(71, 4).
+      Es cobertura del temario, no probabilidad de aprobar.
+      Los prácticos no intervienen en este sorteo.
+    </p>
+  </section>
+
+  <div class="section-heading">
+    <h2>Mi temario</h2>
+    <div class="button-group" aria-label="Vista del temario">
+      <button id="view-cards" aria-pressed="true">Tarjetas</button>
+      <button id="view-compact" aria-pressed="false">Resumen compacto</button>
+    </div>
+  </div>
+
   <div class="toolbar">
     <input id="search" type="search" placeholder="Buscar tema…" aria-label="Buscar tema">
+
     <select id="filter" aria-label="Filtrar temas">
       <option value="all">Todos los temas</option>
       <option value="pending">Pendientes</option>
       <option value="progress">En progreso</option>
       <option value="studied">Estudiados</option>
+      <option value="done">Al día</option>
       <option value="review">Por repasar</option>
       <option value="long">Más de 10 páginas</option>
     </select>
+
     <button id="export">Exportar copia</button>
     <button id="import">Importar copia</button>
     <input id="file" type="file" accept=".json,application/json" hidden>
@@ -162,21 +406,45 @@
   </div>
 
   <p class="notice">
-    Un tema estudiado necesita repaso tras 7 días sin lectura, o si no tiene fecha registrada.
-    El aviso de extensión aparece cuando supera las 10 páginas.
+    Un tema estudiado pasa a «Por repasar» tras 7 días sin lectura,
+    o si no tiene fecha registrada. El aviso de extensión aparece
+    cuando supera las 10 páginas.
   </p>
-  <div id="message" role="status" aria-live="polite"></div>
+
   <p id="count" class="notice"></p>
   <section id="topics" class="grid" aria-label="Temario"></section>
 
+  <section class="practicals" aria-labelledby="practicals-heading">
+    <div class="section-heading">
+      <h2 id="practicals-heading">Prácticos</h2>
+      <button id="add-practicals">Añadir bloques</button>
+    </div>
+
+    <p class="notice">
+      Registra ejercicios resueltos, fecha de última práctica y notas
+      para cada bloque.
+    </p>
+
+    <p id="practicals-summary" class="notice"></p>
+    <div id="practicals-list" class="practical-list"></div>
+    <p id="practicals-empty" class="notice">
+      Todavía no hay bloques. Pulsa «Añadir bloques» y pega tu lista,
+      con un bloque por línea.
+    </p>
+  </section>
+
   <footer class="notice">
-    Guardado automático en este navegador. Exporta copias de seguridad:
-    los datos no se sincronizan entre dispositivos y se pierden si borras el almacenamiento del sitio.
+    Guardado automático en este navegador. Las copias incluyen temas y prácticos.
+    Los datos no se sincronizan entre dispositivos y se pierden si borras
+    el almacenamiento del sitio.
   </footer>
 </main>
 
+<div id="message" role="status" aria-live="polite"></div>
+
+<!-- Editor de temas -->
 <dialog id="editor">
-  <form id="form">
+  <form id="topic-form">
     <p class="eyebrow" id="editing-number"></p>
     <h2>Progreso del tema</h2>
 
@@ -196,6 +464,7 @@
         Repasos realizados
         <input id="reviews" type="number" min="0" max="9999" step="1" required>
       </label>
+
       <label class="field">
         Número de páginas
         <input id="pages" type="number" min="0" max="9999" step="1" required>
@@ -206,15 +475,85 @@
       Última lectura
       <input id="lastRead" type="date">
     </label>
+
     <button id="read-today" type="button">Marcar lectura de hoy</button>
+
     <p class="notice">
       Usa 0 si aún no sabes cuántas páginas tiene.
       Los repasos y la fecha de lectura se registran de forma independiente.
     </p>
 
     <div class="actions">
-      <button id="cancel" type="button">Cancelar</button>
+      <button type="button" data-close="editor">Cancelar</button>
       <button class="primary" type="submit">Guardar cambios</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Añadir lista de prácticos -->
+<dialog id="add-practicals-dialog">
+  <form id="add-practicals-form">
+    <h2>Añadir bloques de prácticos</h2>
+
+    <label class="field">
+      Un bloque por línea
+      <textarea
+        id="practical-titles"
+        rows="8"
+        maxlength="15000"
+        placeholder="Pega aquí tu lista de prácticos"
+        required
+      ></textarea>
+    </label>
+
+    <p class="notice">
+      Se añaden a los bloques existentes sin borrar su progreso.
+    </p>
+
+    <div class="actions">
+      <button type="button" data-close="add-practicals-dialog">Cancelar</button>
+      <button class="primary" type="submit">Añadir bloques</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Editor de prácticos -->
+<dialog id="practical-editor">
+  <form id="practical-form">
+    <h2>Progreso del práctico</h2>
+
+    <label class="field">
+      Nombre del bloque
+      <input id="practical-title" maxlength="250" required>
+    </label>
+
+    <label class="field">
+      Ejercicios resueltos
+      <input
+        id="practical-solved"
+        type="number"
+        min="0"
+        max="99999"
+        step="1"
+        required
+      >
+    </label>
+
+    <label class="field">
+      Última práctica
+      <input id="practical-date" type="date">
+    </label>
+
+    <button id="practice-today" type="button">Marcar práctica de hoy</button>
+
+    <label class="field">
+      Notas
+      <textarea id="practical-notes" rows="4" maxlength="3000"></textarea>
+    </label>
+
+    <div class="actions">
+      <button type="button" data-close="practical-editor">Cancelar</button>
+      <button class="primary" type="submit">Guardar progreso</button>
     </div>
   </form>
 </dialog>
@@ -223,27 +562,82 @@
 "use strict";
 
 /*
-  Puedes sustituir estos nombres por los títulos completos.
-  Mantén los 71 elementos en el mismo orden.
+  Títulos iniciales de los temas.
+  Puedes sustituirlos por tus títulos, manteniendo los 71 elementos.
+  Los nombres que ya hayas guardado en el navegador tienen prioridad.
 */
 const TITULOS = Array.from({ length: 71 }, (_, i) => `Tema ${i + 1}`);
 
-const STORAGE_KEY = "orbita-tecnologia-v1";
+/*
+  Lista inicial de prácticos.
+  Puedes escribir aquí sus nombres antes de publicar, por ejemplo:
+  const PRACTICOS_INICIALES = ["Nombre del bloque 1", "Nombre del bloque 2"];
+
+  También puedes añadirlos desde la aplicación.
+*/
+const PRACTICOS_INICIALES = [];
+
+const TOPIC_KEY = "orbita-tecnologia-v1";
+const PRACTICAL_KEY = "orbita-practicals-v1";
+const VIEW_KEY = "orbita-view";
+
 const $ = id => document.getElementById(id);
-const labels = {
+
+const statusLabels = {
   pending: "Pendiente",
   progress: "En progreso",
   done: "Al día",
   review: "Por repasar"
 };
 
-let selectedId = null;
-let topics = createTopics();
+let selectedTopic = null;
+let selectedPractical = null;
+let notificationTimer;
+
+function today() {
+  const d = new Date();
+
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function notify(text) {
+  $("message").textContent = text;
+  clearTimeout(notificationTimer);
+
+  notificationTimer = setTimeout(() => {
+    $("message").textContent = "";
+  }, 6000);
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[c]);
+}
+
+function validDate(value) {
+  if (value === "") return true;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const d = new Date(value + "T00:00:00Z");
+
+  return !Number.isNaN(d.getTime()) &&
+    d.toISOString().slice(0, 10) === value &&
+    value <= today();
+}
 
 function createTopics() {
-  return TITULOS.map((title, i) => ({
+  return Array.from({ length: 71 }, (_, i) => ({
     id: i + 1,
-    title,
+    title: TITULOS[i] || `Tema ${i + 1}`,
     updated: false,
     studied: false,
     outline: false,
@@ -253,40 +647,38 @@ function createTopics() {
   }));
 }
 
-function today() {
-  const d = new Date();
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, "0"),
-    String(d.getDate()).padStart(2, "0")
-  ].join("-");
+function createPractical(title, index = 0) {
+  return {
+    id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2)}`,
+    title,
+    solved: 0,
+    lastPractice: "",
+    notes: ""
+  };
 }
 
-function validDate(value) {
-  if (value === "") return true;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const d = new Date(value + "T00:00:00Z");
-  return !Number.isNaN(d.getTime()) &&
-    d.toISOString().slice(0, 10) === value &&
-    value <= today();
-}
-
-function validate(data) {
+function validateTopics(data) {
   if (!Array.isArray(data) || data.length !== 71) {
     throw new Error("La copia debe contener exactamente 71 temas.");
   }
 
   return data.map((t, i) => {
-    if (!t || t.id !== i + 1 ||
-        typeof t.title !== "string" ||
-        !t.title.trim() || t.title.length > 250 ||
-        !["updated", "studied", "outline"].every(k => typeof t[k] === "boolean") ||
-        !["reviews", "pages"].every(k =>
-          Number.isInteger(t[k]) && t[k] >= 0 && t[k] <= 9999
-        ) ||
-        typeof t.lastRead !== "string" ||
-        !validDate(t.lastRead)) {
-      throw new Error("Hay datos no válidos en uno o varios temas.");
+    if (
+      !t ||
+      t.id !== i + 1 ||
+      typeof t.title !== "string" ||
+      !t.title.trim() ||
+      t.title.length > 250 ||
+      !["updated", "studied", "outline"].every(
+        key => typeof t[key] === "boolean"
+      ) ||
+      !["reviews", "pages"].every(
+        key => Number.isInteger(t[key]) && t[key] >= 0 && t[key] <= 9999
+      ) ||
+      typeof t.lastRead !== "string" ||
+      !validDate(t.lastRead)
+    ) {
+      throw new Error("Uno o varios temas contienen datos no válidos.");
     }
 
     return {
@@ -302,117 +694,254 @@ function validate(data) {
   });
 }
 
-function notify(text) {
-  $("message").textContent = text;
+function validatePracticals(data) {
+  if (!Array.isArray(data) || data.length > 200) {
+    throw new Error("Se admiten hasta 200 bloques de prácticos.");
+  }
+
+  const ids = new Set();
+
+  return data.map(p => {
+    if (
+      !p ||
+      typeof p.id !== "string" ||
+      !p.id ||
+      ids.has(p.id) ||
+      typeof p.title !== "string" ||
+      !p.title.trim() ||
+      p.title.length > 250 ||
+      !Number.isInteger(p.solved) ||
+      p.solved < 0 ||
+      p.solved > 99999 ||
+      typeof p.lastPractice !== "string" ||
+      !validDate(p.lastPractice) ||
+      typeof p.notes !== "string" ||
+      p.notes.length > 3000
+    ) {
+      throw new Error("Uno o varios prácticos contienen datos no válidos.");
+    }
+
+    ids.add(p.id);
+
+    return {
+      id: p.id,
+      title: p.title.trim(),
+      solved: p.solved,
+      lastPractice: p.lastPractice,
+      notes: p.notes
+    };
+  });
 }
 
-function save(next) {
+let topics = createTopics();
+let practicals = PRACTICOS_INICIALES.map(createPractical);
+
+try {
+  const saved = localStorage.getItem(TOPIC_KEY);
+  if (saved) topics = validateTopics(JSON.parse(saved));
+} catch {
+  notify("No se pudieron recuperar los temas. Importa una copia de seguridad.");
+}
+
+try {
+  const saved = localStorage.getItem(PRACTICAL_KEY);
+  if (saved) practicals = validatePracticals(JSON.parse(saved));
+} catch {
+  notify("No se pudieron recuperar los prácticos. Importa una copia de seguridad.");
+}
+
+function saveTopics(next) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    localStorage.setItem(TOPIC_KEY, JSON.stringify(next));
     topics = next;
     return true;
   } catch {
-    notify("No se pudo guardar. Revisa el almacenamiento del navegador y exporta una copia.");
+    notify("No se pudo guardar. Revisa el almacenamiento y exporta una copia.");
     return false;
   }
 }
 
-try {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) topics = validate(JSON.parse(saved));
-} catch {
-  notify("No se pudieron cargar los datos guardados. Puedes importar una copia de seguridad.");
+function savePracticals(next) {
+  try {
+    localStorage.setItem(PRACTICAL_KEY, JSON.stringify(next));
+    practicals = next;
+    return true;
+  } catch {
+    notify("No se pudieron guardar los prácticos. Exporta una copia.");
+    return false;
+  }
 }
 
-function daysSince(t) {
-  if (!t.lastRead) return null;
+/* Importación conjunta con recuperación si falla el guardado. */
+function saveBackup(nextTopics, nextPracticals) {
+  let previousTopics;
+  let previousPracticals;
+
+  try {
+    previousTopics = localStorage.getItem(TOPIC_KEY);
+    previousPracticals = localStorage.getItem(PRACTICAL_KEY);
+  } catch {
+    notify("No se puede acceder al almacenamiento del navegador.");
+    return false;
+  }
+
+  try {
+    localStorage.setItem(TOPIC_KEY, JSON.stringify(nextTopics));
+    localStorage.setItem(PRACTICAL_KEY, JSON.stringify(nextPracticals));
+
+    topics = nextTopics;
+    practicals = nextPracticals;
+    return true;
+  } catch {
+    try {
+      if (previousTopics === null) localStorage.removeItem(TOPIC_KEY);
+      else localStorage.setItem(TOPIC_KEY, previousTopics);
+
+      if (previousPracticals === null) localStorage.removeItem(PRACTICAL_KEY);
+      else localStorage.setItem(PRACTICAL_KEY, previousPracticals);
+    } catch {
+      notify("Fallo de almacenamiento. Conserva tu archivo de copia de seguridad.");
+      return false;
+    }
+
+    notify("No se pudo importar. Comprueba el espacio del navegador.");
+    return false;
+  }
+}
+
+function daysSince(date) {
+  if (!date) return null;
+
   return Math.round((
     Date.parse(today() + "T00:00:00Z") -
-    Date.parse(t.lastRead + "T00:00:00Z")
+    Date.parse(date + "T00:00:00Z")
   ) / 86400000);
 }
 
-function status(t) {
+function topicStatus(t) {
   if (t.studied) {
-    const days = daysSince(t);
+    const days = daysSince(t.lastRead);
     return days === null || days >= 7 ? "review" : "done";
   }
-  if (t.updated || t.outline || t.reviews > 0 || t.lastRead) return "progress";
+
+  if (t.updated || t.outline || t.reviews > 0 || t.lastRead) {
+    return "progress";
+  }
+
   return "pending";
 }
 
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-    '"': "&quot;", "'": "&#39;"
-  })[c]);
-}
+function readingText(date) {
+  const days = daysSince(date);
 
-function readingText(t) {
-  const days = daysSince(t);
   if (days === null) return "Sin lecturas registradas";
-  if (days === 0) return "Última lectura: hoy";
-  if (days === 1) return "Última lectura: hace 1 día";
-  return `Última lectura: hace ${days} días`;
+  if (days === 0) return "Leído hoy";
+  if (days === 1) return "Leído hace 1 día";
+  return `Leído hace ${days} días`;
 }
 
-function render() {
+/*
+  Probabilidad de obtener al menos un tema conocido al sacar
+  cuatro bolas distintas de un total de 71.
+*/
+function coverage(studied) {
+  let missProbability = 1;
+
+  for (let i = 0; i < 4; i++) {
+    missProbability *= Math.max(0, 71 - studied - i) / (71 - i);
+  }
+
+  return 1 - missProbability;
+}
+
+function percent(value) {
+  return new Intl.NumberFormat("es-ES", {
+    style: "percent",
+    maximumFractionDigits: 1
+  }).format(value);
+}
+
+function renderTopics() {
   const studied = topics.filter(t => t.studied).length;
   const updated = topics.filter(t => t.updated).length;
-  const reviews = topics.reduce((total, t) => total + t.reviews, 0);
-  const due = topics.filter(t => status(t) === "review").length;
+  const reviews = topics.reduce((sum, t) => sum + t.reviews, 0);
+  const due = topics.filter(t => topicStatus(t) === "review").length;
+  const current = topics.filter(t => topicStatus(t) === "done").length;
 
   $("summary").innerHTML = [
     [`${studied} / 71`, "Temas estudiados"],
     [`${updated} / 71`, "Temas actualizados"],
     [reviews, "Repasos realizados"],
     [due, "Temas por repasar"]
-  ].map(([value, label]) =>
-    `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`
-  ).join("");
+  ].map(([value, label]) => `
+    <div class="stat">
+      <strong>${value}</strong>
+      <span>${label}</span>
+    </div>
+  `).join("");
+
+  $("probability-studied").textContent = percent(coverage(studied));
+  $("probability-current").textContent = percent(coverage(current));
+
+  $("probability-studied-label").textContent =
+    `Con tus ${studied} temas estudiados`;
+
+  $("probability-current-label").textContent =
+    `Solo con tus ${current} temas al día`;
 
   const query = $("search").value.trim().toLocaleLowerCase("es");
   const filter = $("filter").value;
 
   const visible = topics.filter(t => {
-    const matchesText = `${t.id} ${t.title}`.toLocaleLowerCase("es").includes(query);
+    const matchesText =
+      `${t.id} ${t.title}`.toLocaleLowerCase("es").includes(query);
+
     const matchesFilter =
       filter === "all" ||
       (filter === "studied" && t.studied) ||
       (filter === "long" && t.pages > 10) ||
-      status(t) === filter;
+      topicStatus(t) === filter;
+
     return matchesText && matchesFilter;
   });
 
   $("count").textContent = `Mostrando ${visible.length} de 71 temas`;
 
   $("topics").innerHTML = visible.map(t => `
-    <article class="card ${status(t)}">
+    <article class="card ${topicStatus(t)}">
       <div class="card-top">
         <span class="number">TEMA ${String(t.id).padStart(2, "0")}</span>
-        <span class="badge">${labels[status(t)]}</span>
+        <span class="badge">${statusLabels[topicStatus(t)]}</span>
       </div>
+
       <h3>${escapeHTML(t.title)}</h3>
+
       <div class="checks">
         ${[
           ["updated", "Actualizado"],
           ["studied", "Estudiado"],
           ["outline", "Esquema"]
-        ].map(([key, label]) =>
-          `<span class="check ${t[key] ? "yes" : ""}">
+        ].map(([key, label]) => `
+          <span class="check ${t[key] ? "yes" : ""}">
             ${t[key] ? "✓" : "○"} ${label}
-          </span>`
-        ).join("")}
+          </span>
+        `).join("")}
       </div>
+
       <div class="details">
         <span>${t.reviews} ${t.reviews === 1 ? "repaso" : "repasos"}</span>
         <span>${t.pages ? t.pages + " páginas" : "Páginas sin registrar"}</span>
       </div>
-      <p class="warning">${t.pages > 10 ? "⚠ Tema extenso: más de 10 páginas" : ""}</p>
-      <p class="reading">${readingText(t)}</p>
+
+      ${t.pages > 10
+        ? '<p class="warning">⚠ Tema extenso: más de 10 páginas</p>'
+        : ""}
+
       <div class="card-footer">
-        <span>Avanza a tu ritmo</span>
-        <button data-edit="${t.id}" aria-label="Editar tema ${t.id}">Editar</button>
+        <span>${readingText(t.lastRead)}</span>
+        <button data-topic="${t.id}" aria-label="Editar tema ${t.id}">
+          Editar
+        </button>
       </div>
     </article>
   `).join("");
@@ -422,38 +951,92 @@ function render() {
   }
 }
 
-function openEditor(id) {
-  selectedId = id;
-  const t = topics.find(t => t.id === id);
-  $("editing-number").textContent = `TEMA ${id}`;
+function renderPracticals() {
+  const solved = practicals.reduce((sum, p) => sum + p.solved, 0);
+  const started = practicals.filter(p => p.solved > 0 || p.lastPractice).length;
+
+  $("practicals-summary").textContent = practicals.length
+    ? `${solved} ejercicios resueltos · ${started} de ${practicals.length} bloques iniciados`
+    : "";
+
+  $("practicals-empty").hidden = practicals.length > 0;
+
+  $("practicals-list").innerHTML = practicals.map((p, index) => `
+    <article class="practical-card">
+      <div>
+        <h3>${escapeHTML(p.title)}</h3>
+        <p>
+          ${p.solved} ejercicios resueltos ·
+          ${p.lastPractice
+            ? "Última práctica: " + p.lastPractice.split("-").reverse().join("/")
+            : "Sin prácticas registradas"}
+        </p>
+        ${p.notes
+          ? `<p class="practical-notes">${escapeHTML(p.notes)}</p>`
+          : ""}
+      </div>
+      <button data-practical="${index}" aria-label="Editar práctico ${index + 1}">
+        Editar
+      </button>
+    </article>
+  `).join("");
+}
+
+function setView(compact, persist = true) {
+  $("topics").classList.toggle("compact", compact);
+  $("view-cards").setAttribute("aria-pressed", String(!compact));
+  $("view-compact").setAttribute("aria-pressed", String(compact));
+
+  if (persist) {
+    try {
+      localStorage.setItem(VIEW_KEY, compact ? "compact" : "cards");
+    } catch {
+      notify("La vista ha cambiado, pero no se pudo guardar la preferencia.");
+    }
+  }
+}
+
+$("view-cards").addEventListener("click", () => setView(false));
+$("view-compact").addEventListener("click", () => setView(true));
+$("search").addEventListener("input", renderTopics);
+$("filter").addEventListener("change", renderTopics);
+
+document.querySelectorAll("[data-close]").forEach(button => {
+  button.addEventListener("click", () => {
+    $(button.dataset.close).close();
+  });
+});
+
+$("topics").addEventListener("click", event => {
+  const button = event.target.closest("[data-topic]");
+  if (!button) return;
+
+  selectedTopic = Number(button.dataset.topic);
+  const t = topics.find(t => t.id === selectedTopic);
+
+  $("editing-number").textContent = `TEMA ${t.id}`;
 
   for (const key of ["title", "reviews", "pages", "lastRead"]) {
     $(key).value = t[key];
   }
+
   for (const key of ["updated", "studied", "outline"]) {
     $(key).checked = t[key];
   }
 
   $("lastRead").max = today();
   $("editor").showModal();
-}
-
-$("topics").addEventListener("click", event => {
-  const button = event.target.closest("[data-edit]");
-  if (button) openEditor(Number(button.dataset.edit));
 });
-
-$("cancel").addEventListener("click", () => $("editor").close());
 
 $("read-today").addEventListener("click", () => {
   $("lastRead").value = today();
 });
 
-$("form").addEventListener("submit", event => {
+$("topic-form").addEventListener("submit", event => {
   event.preventDefault();
 
   const edited = {
-    id: selectedId,
+    id: selectedTopic,
     title: $("title").value.trim(),
     updated: $("updated").checked,
     studied: $("studied").checked,
@@ -464,10 +1047,13 @@ $("form").addEventListener("submit", event => {
   };
 
   try {
-    const next = validate(topics.map(t => t.id === selectedId ? edited : t));
-    if (save(next)) {
+    const next = validateTopics(
+      topics.map(t => t.id === selectedTopic ? edited : t)
+    );
+
+    if (saveTopics(next)) {
       $("editor").close();
-      render();
+      renderTopics();
       notify("Progreso guardado.");
     }
   } catch (error) {
@@ -475,20 +1061,109 @@ $("form").addEventListener("submit", event => {
   }
 });
 
-$("search").addEventListener("input", render);
-$("filter").addEventListener("change", render);
+$("add-practicals").addEventListener("click", () => {
+  $("practical-titles").value = "";
+  $("add-practicals-dialog").showModal();
+});
+
+$("add-practicals-form").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const titles = $("practical-titles").value
+    .split(/\r?\n/)
+    .map(title => title.trim())
+    .filter(Boolean);
+
+  if (!titles.length) {
+    alert("Escribe al menos un bloque.");
+    return;
+  }
+
+  try {
+    const next = validatePracticals([
+      ...practicals,
+      ...titles.map(createPractical)
+    ]);
+
+    if (savePracticals(next)) {
+      $("add-practicals-dialog").close();
+      renderPracticals();
+      notify("Bloques añadidos.");
+    }
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+$("practicals-list").addEventListener("click", event => {
+  const button = event.target.closest("[data-practical]");
+  if (!button) return;
+
+  selectedPractical = Number(button.dataset.practical);
+  const p = practicals[selectedPractical];
+
+  $("practical-title").value = p.title;
+  $("practical-solved").value = p.solved;
+  $("practical-date").value = p.lastPractice;
+  $("practical-date").max = today();
+  $("practical-notes").value = p.notes;
+
+  $("practical-editor").showModal();
+});
+
+$("practice-today").addEventListener("click", () => {
+  $("practical-date").value = today();
+});
+
+$("practical-form").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const edited = {
+    ...practicals[selectedPractical],
+    title: $("practical-title").value.trim(),
+    solved: Number($("practical-solved").value),
+    lastPractice: $("practical-date").value,
+    notes: $("practical-notes").value
+  };
+
+  try {
+    const next = validatePracticals(
+      practicals.map((p, index) =>
+        index === selectedPractical ? edited : p
+      )
+    );
+
+    if (savePracticals(next)) {
+      $("practical-editor").close();
+      renderPracticals();
+      notify("Práctico guardado.");
+    }
+  } catch (error) {
+    alert(error.message);
+  }
+});
 
 $("export").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(topics, null, 2)], {
+  const backup = {
+    version: 2,
+    topics,
+    practicals
+  };
+
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {
     type: "application/json"
   });
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
+
   link.href = url;
   link.download = `oposicion-tecnologia-${today()}.json`;
+
   document.body.appendChild(link);
   link.click();
   link.remove();
+
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 
@@ -499,13 +1174,36 @@ $("file").addEventListener("change", async event => {
   if (!file) return;
 
   try {
-    if (file.size > 300000) throw new Error("El archivo es demasiado grande.");
-    const data = validate(JSON.parse(await file.text()));
+    if (file.size > 3000000) {
+      throw new Error("El archivo es demasiado grande.");
+    }
 
-    if (!confirm("Esta copia sustituirá el progreso actual. ¿Continuar?")) return;
+    const data = JSON.parse(await file.text());
+    const legacy = Array.isArray(data);
 
-    if (save(data)) {
-      render();
+    if (!legacy && (!data || data.version !== 2)) {
+      throw new Error("Versión de copia no compatible.");
+    }
+
+    const nextTopics = validateTopics(legacy ? data : data.topics);
+
+    /*
+      Las copias antiguas solo tienen temas.
+      Al importarlas se conservan los prácticos actuales.
+    */
+    const nextPracticals = legacy
+      ? practicals
+      : validatePracticals(data.practicals);
+
+    const message = legacy
+      ? "Esta copia sustituirá los temas y conservará tus prácticos. ¿Continuar?"
+      : "Esta copia sustituirá los temas y los prácticos actuales. ¿Continuar?";
+
+    if (!confirm(message)) return;
+
+    if (saveBackup(nextTopics, nextPracticals)) {
+      renderTopics();
+      renderPracticals();
       notify("Copia importada correctamente.");
     }
   } catch (error) {
@@ -517,9 +1215,17 @@ $("file").addEventListener("change", async event => {
   }
 });
 
-window.addEventListener("focus", render);
-setInterval(render, 60000);
-render();
+renderTopics();
+renderPracticals();
+
+try {
+  setView(localStorage.getItem(VIEW_KEY) === "compact", false);
+} catch {
+  setView(false, false);
+}
+
+window.addEventListener("focus", renderTopics);
+setInterval(renderTopics, 60000);
 </script>
 </body>
 </html>
