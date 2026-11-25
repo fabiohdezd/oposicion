@@ -294,6 +294,75 @@ footer { margin: 25px 0; }
   .stat { padding: 12px; }
   .probability strong { font-size: 25px; }
 }
+/* Bloques del temario */
+.block-heading {
+  grid-column: 1 / -1;
+  padding: 16px 0 8px;
+  margin-top: 14px;
+  border-bottom: 2px solid #dce5de;
+}
+
+.block-heading h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #295642;
+}
+
+.block-heading p {
+  margin: 0;
+  font-size: 12px;
+  color: #687c73;
+}
+
+.topic-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+/* Dominio: independiente del estado de repaso */
+.mastery-badge {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mastery-good {
+  background: #e5f4e9;
+  color: #23653b;
+  border: 1px solid #b9dfc4;
+}
+
+.mastery-regular {
+  background: #fff0db;
+  color: #955100;
+  border: 1px solid #f1cf9e;
+}
+
+.mastery-bad {
+  background: #fde8e7;
+  color: #a12e2e;
+  border: 1px solid #eebbbb;
+}
+
+.mastery-unknown {
+  background: #f0f2f1;
+  color: #68756d;
+  border: 1px solid #dce2dd;
+}
+
+.compact .topic-title {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.compact .mastery-badge {
+  font-size: 10px;
+  padding: 3px 6px;
+}
 </style>
 </head>
 
@@ -509,7 +578,17 @@ footer { margin: 25px 0; }
         <option value="review">Por repasar</option>
         <option value="long">Más de 10 páginas</option>
       </select>
+<select id="block-filter" aria-label="Filtrar por bloque">
+  <option value="all">Todos los bloques</option>
+</select>
 
+<select id="mastery-filter" aria-label="Filtrar por dominio">
+  <option value="all">Todos los niveles</option>
+  <option value="good">🟢 Me lo sé bien</option>
+  <option value="regular">🟠 Regular</option>
+  <option value="bad">🔴 Me lo sé mal</option>
+  <option value="unknown">⚪ Sin valorar</option>
+</select>
       <button id="cards" aria-pressed="true">Tarjetas</button>
       <button id="compact" aria-pressed="false">Resumen compacto</button>
     </div>
@@ -557,7 +636,15 @@ footer { margin: 25px 0; }
 <dialog id="topic-dialog">
   <form id="topic-form">
     <h2 id="topic-heading">Progreso del tema</h2>
-
+<label class="field">
+  ¿Cómo te sabes este tema?
+  <select id="topic-mastery">
+    <option value="unknown">⚪ Sin valorar</option>
+    <option value="good">🟢 Me lo sé bien</option>
+    <option value="regular">🟠 Regular</option>
+    <option value="bad">🔴 Me lo sé mal</option>
+  </select>
+</label>
     <label class="field">
       Título
       <input id="topic-title" maxlength="250" required>
@@ -789,6 +876,9 @@ function checkTopics(a) {
 
     return {
       id: t.id,
+      mastery: ["good", "regular", "bad", "unknown"].includes(t.mastery)
+    ? t.mastery
+    : "unknown",
       title: t.title.trim(),
       updated: t.updated,
       studied: t.studied,
@@ -1085,36 +1175,216 @@ function statsHTML(items) {
 /* MOSTRAR TEMARIO */
 
 function renderTopics() {
+  /* BLOQUES DEL TEMARIO */
+
+const BLOCKS = [
+  {
+    id: 1,
+    name: "Energía y medioambiente",
+    start: 1,
+    end: 4
+  },
+  {
+    id: 2,
+    name: "Desarrollo científico, tecnológico y sociedad",
+    start: 5,
+    end: 8
+  },
+  {
+    id: 3,
+    name: "Informática y sistemas informáticos",
+    start: 9,
+    end: 9
+  },
+  {
+    id: 4,
+    name: "Procesos productivos, proyectos técnicos y organización empresarial",
+    start: 10,
+    end: 16
+  },
+  {
+    id: 5,
+    name: "Seguridad y prevención de riesgos laborales",
+    start: 17,
+    end: 19
+  },
+  {
+    id: 6,
+    name: "Expresión gráfica y diseño técnico",
+    start: 20,
+    end: 27
+  },
+  {
+    id: 7,
+    name: "Fundamentos y propiedades de los materiales",
+    start: 28,
+    end: 29
+  },
+  {
+    id: 8,
+    name: "Materiales técnicos y procesos de fabricación",
+    start: 30,
+    end: 41
+  },
+  {
+    id: 9,
+    name: "Metrología, esfuerzos, estructuras y mecanismos",
+    start: 42,
+    end: 46
+  },
+  {
+    id: 10,
+    name: "Máquinas térmicas, eléctricas y electrodomésticos",
+    start: 47,
+    end: 50
+  },
+  {
+    id: 11,
+    name: "Instalaciones en viviendas y edificios",
+    start: 51,
+    end: 53
+  },
+  {
+    id: 12,
+    name: "Electricidad y circuitos eléctricos",
+    start: 54,
+    end: 56
+  },
+  {
+    id: 13,
+    name: "Electrónica analógica y circuitos de conmutación",
+    start: 57,
+    end: 60
+  },
+  {
+    id: 14,
+    name: "Neumática e hidráulica",
+    start: 61,
+    end: 61
+  },
+  {
+    id: 15,
+    name: "Electrónica digital y sistemas lógicos",
+    start: 62,
+    end: 64
+  },
+  {
+    id: 16,
+    name: "Sistemas de control y automatización",
+    start: 65,
+    end: 70
+  },
+  {
+    id: 17,
+    name: "Didáctica y práctica de la Tecnología",
+    start: 71,
+    end: 71
+  }
+];
+
+const MASTERY = {
+  good: {
+    label: "🟢 Me lo sé bien"
+  },
+  regular: {
+    label: "🟠 Regular"
+  },
+  bad: {
+    label: "🔴 Me lo sé mal"
+  },
+  unknown: {
+    label: "⚪ Sin valorar"
+  }
+};
+
+function masteryOf(topic) {
+  return ["good", "regular", "bad", "unknown"].includes(topic.mastery)
+    ? topic.mastery
+    : "unknown";
+}
+
+/* Rellenar el selector de bloques */
+$("block-filter").innerHTML =
+  '<option value="all">Todos los bloques</option>' +
+  BLOCKS.map(block => `
+    <option value="${block.id}">
+      ${block.id}. ${esc(block.name)}
+    </option>
+  `).join("");
+
+$("block-filter").addEventListener("change", renderTopics);
+$("mastery-filter").addEventListener("change", renderTopics);
+
+/* MOSTRAR TEMARIO POR BLOQUES */
+
+function renderTopics() {
   const studied = data.topics.filter(t => t.studied).length;
   const current = data.topics.filter(t => state(t) === "done").length;
 
   $("stats").innerHTML = statsHTML([
     [`${studied}/71`, "Estudiados"],
     [data.topics.filter(t => t.updated).length, "Actualizados"],
-    [data.topics.reduce((n, t) => n + t.reviews, 0), "Repasos acumulados"],
-    [data.topics.filter(t => state(t) === "review").length, "Por repasar"]
+    [
+      data.topics.reduce((n, t) => n + t.reviews, 0),
+      "Repasos acumulados"
+    ],
+    [
+      data.topics.filter(t => state(t) === "review").length,
+      "Por repasar"
+    ]
   ]);
 
   $("prob-studied").textContent = percent(coverage(studied));
   $("prob-current").textContent = percent(coverage(current));
-  $("prob-studied-label").textContent = `Con ${studied} temas estudiados`;
-  $("prob-current-label").textContent = `Con ${current} temas al día`;
+
+  $("prob-studied-label").textContent =
+    `Con ${studied} temas estudiados`;
+
+  $("prob-current-label").textContent =
+    `Con ${current} temas al día`;
 
   const query = $("search").value.trim().toLocaleLowerCase("es");
   const filter = $("filter").value;
+  const blockFilter = $("block-filter").value;
+  const masteryFilter = $("mastery-filter").value;
 
-  const visible = data.topics.filter(t =>
-    `${t.id} ${t.title}`.toLocaleLowerCase("es").includes(query) &&
-    (
+  const visible = data.topics.filter(topic => {
+    const matchesSearch =
+      `${topic.id} ${topic.title}`
+        .toLocaleLowerCase("es")
+        .includes(query);
+
+    const matchesStatus =
       filter === "all" ||
-      filter === state(t) ||
-      (filter === "studied" && t.studied) ||
-      (filter === "long" && t.pages > 10)
-    )
-  );
+      filter === state(topic) ||
+      (filter === "studied" && topic.studied) ||
+      (filter === "long" && topic.pages > 10);
 
-  $("count").textContent = `Mostrando ${visible.length} de 71 temas`;
-  $("topics").classList.toggle("compact", data.view === "compact");
+    const block = BLOCKS.find(block =>
+      topic.id >= block.start && topic.id <= block.end
+    );
+
+    const matchesBlock =
+      blockFilter === "all" ||
+      String(block.id) === blockFilter;
+
+    const matchesMastery =
+      masteryFilter === "all" ||
+      masteryOf(topic) === masteryFilter;
+
+    return matchesSearch &&
+      matchesStatus &&
+      matchesBlock &&
+      matchesMastery;
+  });
+
+  $("count").textContent =
+    `Mostrando ${visible.length} de 71 temas`;
+
+  $("topics").classList.toggle(
+    "compact",
+    data.view === "compact"
+  );
 
   $("cards").setAttribute(
     "aria-pressed",
@@ -1126,48 +1396,107 @@ function renderTopics() {
     String(data.view === "compact")
   );
 
-  $("topics").innerHTML = visible.map(t => `
-    <article class="topic ${state(t)}">
-      <div class="card-top">
-        <span>TEMA ${t.id}</span>
-        <span class="badge">${labels[state(t)]}</span>
+  let html = "";
+
+  for (const block of BLOCKS) {
+    const blockTopics = visible.filter(topic =>
+      topic.id >= block.start && topic.id <= block.end
+    );
+
+    if (!blockTopics.length) continue;
+
+    const allBlockTopics = data.topics.filter(topic =>
+      topic.id >= block.start && topic.id <= block.end
+    );
+
+    const blockStudied = allBlockTopics.filter(
+      topic => topic.studied
+    ).length;
+
+    const blockGood = allBlockTopics.filter(
+      topic => masteryOf(topic) === "good"
+    ).length;
+
+    const range = block.start === block.end
+      ? `Tema ${block.start}`
+      : `Temas ${block.start}–${block.end}`;
+
+    html += `
+      <div class="block-heading">
+        <h3>Bloque ${block.id} · ${esc(block.name)}</h3>
+        <p>
+          ${range} ·
+          ${blockStudied}/${allBlockTopics.length} estudiados ·
+          ${blockGood}/${allBlockTopics.length} con dominio «Bien»
+        </p>
       </div>
+    `;
 
-      <h3>${esc(t.title)}</h3>
+    html += blockTopics.map(topic => {
+      const mastery = masteryOf(topic);
 
-      <div class="checks">
-        ${[
-          ["updated", "Actualizado"],
-          ["studied", "Estudiado"],
-          ["outline", "Esquema"]
-        ].map(([key, label]) => `
-          <span class="check ${t[key] ? "yes" : ""}">
-            ${t[key] ? "✓" : "○"} ${label}
-          </span>
-        `).join("")}
-      </div>
+      let reading = "Sin lecturas";
 
-      <div class="details">
-        <span>${t.reviews} repasos</span>
-        <span>${t.pages ? t.pages + " páginas" : "Páginas sin registrar"}</span>
-      </div>
+      if (topic.lastRead) {
+        reading = days(topic.lastRead) === 0
+          ? "Leído hoy"
+          : `Leído hace ${days(topic.lastRead)} días`;
+      }
 
-      ${t.pages > 10
-        ? '<p class="warning">⚠ Más de 10 páginas</p>'
-        : ""}
+      return `
+        <article class="topic ${state(topic)}">
+          <div class="card-top">
+            <span>TEMA ${topic.id}</span>
+            <span class="badge">
+              ${labels[state(topic)]}
+            </span>
+          </div>
 
-      <div class="card-footer">
-        <span>
-          ${t.lastRead
-            ? days(t.lastRead) === 0
-              ? "Leído hoy"
-              : `Leído hace ${days(t.lastRead)} días`
-            : "Sin lecturas"}
-        </span>
-        <button data-topic="${t.id}">Editar</button>
-      </div>
-    </article>
-  `).join("") || "<p>No hay temas con estos filtros.</p>";
+          <div class="topic-title">
+            <h3>${esc(topic.title)}</h3>
+            <span class="mastery-badge mastery-${mastery}">
+              ${MASTERY[mastery].label}
+            </span>
+          </div>
+
+          <div class="checks">
+            ${[
+              ["updated", "Actualizado"],
+              ["studied", "Estudiado"],
+              ["outline", "Esquema"]
+            ].map(([key, label]) => `
+              <span class="check ${topic[key] ? "yes" : ""}">
+                ${topic[key] ? "✓" : "○"} ${label}
+              </span>
+            `).join("")}
+          </div>
+
+          <div class="details">
+            <span>${topic.reviews} repasos</span>
+            <span>
+              ${topic.pages
+                ? topic.pages + " páginas"
+                : "Páginas sin registrar"}
+            </span>
+          </div>
+
+          ${topic.pages > 10
+            ? '<p class="warning">⚠ Más de 10 páginas</p>'
+            : ""}
+
+          <div class="card-footer">
+            <span>${reading}</span>
+            <button data-topic="${topic.id}">
+              Editar
+            </button>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  $("topics").innerHTML =
+    html || "<p>No hay temas con estos filtros.</p>";
 }
 
 /* MOSTRAR PRÁCTICOS */
@@ -1486,6 +1815,7 @@ function openTopic(id) {
 
   $("topic-heading").textContent = `Tema ${id}`;
   $("topic-title").value = t.title;
+  $("topic-mastery").value = masteryOf(t);
 
   for (const key of ["updated", "studied", "outline", "reviews", "pages"]) {
     const property = ["updated", "studied", "outline"].includes(key)
@@ -1551,6 +1881,7 @@ $("topic-form").addEventListener("submit", event => {
 
   const edited = {
     ...old,
+    mastery: $("topic-mastery").value,
     title: $("topic-title").value.trim(),
     updated: $("topic-updated").checked,
     studied: $("topic-studied").checked,
